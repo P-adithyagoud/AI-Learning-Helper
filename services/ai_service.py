@@ -22,7 +22,7 @@ INPUT:
 * Skill: {skill}
 * Level: {level}
 * Daily Time: {daily_hours}
-* Target Duration: auto (max 4 weeks)
+* Target Duration: dynamic based on complexity and daily hours
 
 ---
 
@@ -39,9 +39,10 @@ Generate a structured learning system divided into 4 sections:
 
 DURATION LOGIC:
 
-* Calculate based on skill complexity, level, and daily hours
-* STRICT LIMIT: maximum 4 weeks, minimum 1 week
-* Fewer weeks = smaller, more reliable output
+* Calculate the TOTAL NUMBER OF DAYS based on skill complexity, level, and daily hours ({daily_hours} hours/day).
+* A simple topic with high daily hours might only require 3-7 days.
+* A complex topic with low daily hours might require up to 14 days limit.
+* IMPORTANT: Do NOT exceed 14 days under any circumstances to keep the response concise.
 
 ---
 
@@ -109,8 +110,9 @@ The roadmap is for EXECUTION ONLY, not for learning resources.
 
 STRUCTURE:
 
-* Organize as: Week → Days
-* Each week has EXACTLY 5 days (no more, no less)
+* Organize as: Week -> Days
+* A week can have up to 7 days.
+* The total number of days across all weeks must align with your calculated duration.
 
 ---
 
@@ -238,8 +240,7 @@ OUTPUT FORMAT (STRICT JSON ONLY):
 
 CONSTRAINTS:
 
-* Weeks: 1–4 total
-* Each week: EXACTLY 5 days
+* Total Duration: calculate realistically based on skill complexity and {daily_hours} hours/day
 * Each day:
 
   * exactly 1 topic
@@ -321,7 +322,7 @@ def call_groq(prompt: str, attempt: int = 1) -> str | None:
         "model": MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.4,
-        "max_tokens": 8000,
+        "max_tokens": 3000,
     }
 
     try:
@@ -335,7 +336,10 @@ def call_groq(prompt: str, attempt: int = 1) -> str | None:
     except requests.Timeout:
         logger.error(f"[Attempt {attempt}] Groq API timeout after {TIMEOUT}s")
     except requests.HTTPError as e:
-        logger.error(f"[Attempt {attempt}] HTTP {e.response.status_code}: {e.response.text[:300]}")
+        status = e.response.status_code
+        logger.error(f"[Attempt {attempt}] HTTP {status}: {e.response.text[:300]}")
+        if status == 429:
+            return '{"error": "API Rate Limit reached (Free Tier). Please wait 30 seconds and try again."}'
     except Exception as e:
         logger.error(f"[Attempt {attempt}] Unexpected error: {e}")
 
