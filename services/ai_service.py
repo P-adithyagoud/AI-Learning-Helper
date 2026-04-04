@@ -1,7 +1,7 @@
 import os
 import json
 import logging
-import httpx
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +88,7 @@ def extract_json(text: str) -> dict | None:
     return None
 
 
-async def call_groq(prompt: str, attempt: int = 1) -> str | None:
+def call_groq(prompt: str, attempt: int = 1) -> str | None:
     api_key = os.getenv("GROQ_API_KEY", "")
     if not api_key or api_key == "your_groq_api_key_here":
         logger.error("GROQ_API_KEY is not set. Please add it to your .env file.")
@@ -105,28 +105,27 @@ async def call_groq(prompt: str, attempt: int = 1) -> str | None:
     }
 
     try:
-        async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-            resp = await client.post(GROQ_API_URL, json=payload, headers=headers)
-            resp.raise_for_status()
-            data = resp.json()
-            raw = data["choices"][0]["message"]["content"]
-            logger.info(f"[Attempt {attempt}] Raw AI response (first 300 chars): {raw[:300]}")
-            return raw
-    except httpx.TimeoutException:
+        resp = requests.post(GROQ_API_URL, json=payload, headers=headers, timeout=TIMEOUT)
+        resp.raise_for_status()
+        data = resp.json()
+        raw = data["choices"][0]["message"]["content"]
+        logger.info(f"[Attempt {attempt}] Raw AI response (first 300 chars): {raw[:300]}")
+        return raw
+    except requests.Timeout:
         logger.error(f"[Attempt {attempt}] Groq API timeout.")
-    except httpx.HTTPStatusError as e:
-        logger.error(f"[Attempt {attempt}] HTTP error: {e.response.status_code} - {e.response.text}")
+    except requests.HTTPError as e:
+        logger.error(f"[Attempt {attempt}] HTTP error: {e.response.status_code} - {e.text}")
     except Exception as e:
         logger.error(f"[Attempt {attempt}] Unexpected error: {e}")
 
     return None
 
 
-async def generate_learning_plan(skill: str, level: str, daily_hours: float) -> dict:
+def generate_learning_plan(skill: str, level: str, daily_hours: float) -> dict:
     prompt = build_prompt(skill, level, daily_hours)
 
     # Attempt 1
-    raw = await call_groq(prompt, attempt=1)
+    raw = call_groq(prompt, attempt=1)
     if raw:
         result = extract_json(raw)
         if result:
@@ -135,7 +134,7 @@ async def generate_learning_plan(skill: str, level: str, daily_hours: float) -> 
     # Attempt 2 with stricter prompt
     logger.warning("First attempt failed or returned invalid JSON. Retrying with stricter prompt.")
     strict_prompt = prompt + "\n\nCRITICAL: Your previous response was not valid JSON. Return ONLY the raw JSON object. Start your response with { and end with }. No other characters."
-    raw2 = await call_groq(strict_prompt, attempt=2)
+    raw2 = call_groq(strict_prompt, attempt=2)
     if raw2:
         result2 = extract_json(raw2)
         if result2:
