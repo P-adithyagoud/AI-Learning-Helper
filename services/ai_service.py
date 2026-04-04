@@ -6,7 +6,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "llama-3.3-70b-versatile"
+MODEL = "llama-3.1-8b-instant"
 TIMEOUT = 60.0
 
 
@@ -328,7 +328,7 @@ def call_groq(prompt: str, attempt: int = 1) -> str | None:
         "model": MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.4,
-        "max_tokens": 8192,
+        "max_tokens": 4000,
     }
 
     try:
