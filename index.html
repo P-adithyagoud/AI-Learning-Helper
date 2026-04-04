@@ -323,7 +323,11 @@
   </div>
 
   <script>
-    const API_URL = '/generate-plan';
+    // Automatically pick the API URL based on where this page is opened
+    const API_URL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://127.0.0.1:8000/generate-plan'
+      : '/generate-plan'; // When deployed to a real domain, it uses the relative path
+
     let isLoading = false;
 
     /* ── TABS ── */
