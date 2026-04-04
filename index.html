@@ -216,6 +216,68 @@
       font-size: 0.875rem; font-weight: 600;
     }
 
+    /* ── DASHBOARD ── */
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 520px) { .dashboard { grid-template-columns: 1fr; } }
+
+    .dash-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 1.1rem 1.25rem;
+      backdrop-filter: blur(10px);
+      transition: border-color 0.2s;
+    }
+    .dash-card:hover { border-color: rgba(255,255,255,0.13); }
+
+    .dash-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.6rem;
+    }
+    .dash-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: rgba(255,255,255,0.35);
+    }
+    .dash-count {
+      font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1;
+    }
+    .dash-count span { font-size: 0.85rem; font-weight: 400; color: rgba(255,255,255,0.3); }
+
+    .dash-bar-track {
+      height: 5px; border-radius: 9999px;
+      background: rgba(255,255,255,0.07);
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+    .dash-bar-fill {
+      height: 100%; border-radius: 9999px;
+      transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+    .dash-bar-fill.yellow { background: linear-gradient(90deg, #F59E0B, #FBBF24); }
+    .dash-bar-fill.green  { background: linear-gradient(90deg, #10b981, #34d399); }
+
+    .dash-footer {
+      font-size: 11px; color: rgba(255,255,255,0.3);
+    }
+
+    /* streak card spans full width if standalone */
+    .streak-row {
+      display: flex; align-items: center; gap: 8px; margin-top: 4px;
+    }
+    .streak-flame { font-size: 1.3rem; line-height: 1; }
+    .streak-num {
+      font-size: 1.8rem; font-weight: 800;
+      background: linear-gradient(135deg, #f97316, #FBBF24);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; line-height: 1;
+    }
+    .streak-label { font-size: 12px; color: rgba(255,255,255,0.35); line-height: 1.2; }
+
     /* ── RESOURCE ITEMS ── */
     .resource-item {
       background: rgba(255,255,255,0.025);
@@ -437,6 +499,43 @@
         <div id="duration-badge" class="duration-pill"></div>
       </div>
 
+      <!-- Dashboard -->
+      <div class="dashboard">
+        <!-- Daily progress -->
+        <div class="dash-card">
+          <div class="dash-top">
+            <span class="dash-label">📅 Daily Progress</span>
+            <span class="dash-count" id="dash-days">0 <span>/ 0 days</span></span>
+          </div>
+          <div class="dash-bar-track"><div class="dash-bar-fill yellow" id="dash-days-bar" style="width:0%"></div></div>
+          <div class="dash-footer" id="dash-days-footer">0% complete</div>
+        </div>
+        <!-- Questions progress -->
+        <div class="dash-card">
+          <div class="dash-top">
+            <span class="dash-label">❓ Questions</span>
+            <span class="dash-count" id="dash-q">0 <span>/ 0 answered</span></span>
+          </div>
+          <div class="dash-bar-track"><div class="dash-bar-fill green" id="dash-q-bar" style="width:0%"></div></div>
+          <div class="dash-footer" id="dash-q-footer">0% complete</div>
+        </div>
+      </div>
+      <!-- Streak -->
+      <div class="dash-card" style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div class="dash-label" style="margin-bottom:6px;">🔥 Current Streak</div>
+          <div class="streak-row">
+            <span class="streak-flame">🔥</span>
+            <span class="streak-num" id="dash-streak">0</span>
+            <span class="streak-label">consecutive<br>days done</span>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="dash-label" style="margin-bottom:4px;">Best streak</div>
+          <div style="font-size:1.1rem;font-weight:700;color:rgba(255,255,255,0.5);" id="dash-best">0 days</div>
+        </div>
+      </div>
+
       <!-- Tabs -->
       <div class="tab-bar" role="tablist">
         <button id="tab-resources"     class="tab-btn active" onclick="switchTab('resources')"     role="tab">📚 Resources</button>
@@ -555,9 +654,59 @@
 
     /* ── RENDER ROADMAP ── */
     let currentPlanKey = '';
+    let allDayKeys = [];   /* ordered list of day keys for streak calc */
+    let totalQuestions = 0;
 
     function getDayKey(planKey, weekNum, dayNum) {
       return `ailp_done_${planKey}_w${weekNum}_d${dayNum}`;
+    }
+
+    /* ── DASHBOARD STATS ── */
+    function calcStats() {
+      const totalDays = allDayKeys.length;
+      let doneDays = 0;
+      allDayKeys.forEach(k => { if (localStorage.getItem(k) === '1') doneDays++; });
+
+      /* streak: consecutive from start */
+      let streak = 0;
+      for (let i = 0; i < allDayKeys.length; i++) {
+        if (localStorage.getItem(allDayKeys[i]) === '1') streak++;
+        else break;
+      }
+      /* best streak: longest consecutive run */
+      let best = 0, run = 0;
+      allDayKeys.forEach(k => {
+        if (localStorage.getItem(k) === '1') { run++; best = Math.max(best, run); }
+        else run = 0;
+      });
+
+      /* questions */
+      let doneQ = 0;
+      for (let i = 0; i < totalQuestions; i++) {
+        if (localStorage.getItem('_q_idx_' + i + '_' + currentPlanKey) === '1') doneQ++;
+      }
+      /* count via DOM instead — more reliable */
+      doneQ = document.querySelectorAll('.question-item.q-done').length;
+      const totalQ = document.querySelectorAll('.question-item').length;
+
+      return { totalDays, doneDays, streak, best, doneQ, totalQ };
+    }
+
+    function renderDashboard() {
+      const s = calcStats();
+      const dayPct  = s.totalDays ? Math.round(s.doneDays / s.totalDays * 100) : 0;
+      const qPct    = s.totalQ    ? Math.round(s.doneQ    / s.totalQ    * 100) : 0;
+
+      document.getElementById('dash-days').innerHTML    = `${s.doneDays} <span>/ ${s.totalDays} days</span>`;
+      document.getElementById('dash-days-bar').style.width  = dayPct + '%';
+      document.getElementById('dash-days-footer').textContent = dayPct + '% complete';
+
+      document.getElementById('dash-q').innerHTML       = `${s.doneQ} <span>/ ${s.totalQ} answered</span>`;
+      document.getElementById('dash-q-bar').style.width = qPct + '%';
+      document.getElementById('dash-q-footer').textContent   = qPct + '% complete';
+
+      document.getElementById('dash-streak').textContent = s.streak;
+      document.getElementById('dash-best').textContent   = s.best + ' days';
     }
 
     function toggleDay(el, key) {
@@ -581,6 +730,7 @@
         let daysHtml = '';
         (wk.days || []).forEach(d => {
           const key = getDayKey(currentPlanKey, checkNum, d.day);
+          allDayKeys.push(key);
           const isDone = localStorage.getItem(key) === '1';
           daysHtml += `
             <div class="day-sep${isDone ? ' done' : ''}" data-key="${key}">
@@ -626,6 +776,7 @@
           btn.addEventListener('click', () => {
             const daySep = btn.closest('.day-sep');
             toggleDay(daySep, daySep.dataset.key);
+            renderDashboard();
           });
         });
 
@@ -634,6 +785,7 @@
           item.querySelector('.q-check').addEventListener('click', () => {
             const done = item.classList.toggle('q-done');
             localStorage.setItem(item.dataset.qkey, done ? '1' : '');
+            renderDashboard();
           });
         });
 
@@ -691,11 +843,14 @@
 
       /* build a stable key from skill+level so ticks survive re-renders */
       currentPlanKey = (data.skill + '_' + data.level).toLowerCase().replace(/\s+/g,'_');
+      allDayKeys = []; /* reset for fresh render */
 
       renderResources(data.resources || {});
       renderRoadmap(data.roadmap || []);
       renderCertifications(data.certifications || []);
       renderMistakes(data.common_mistakes || []);
+
+      renderDashboard();
 
       switchTab('resources');
       const resultsEl = document.getElementById('results');
