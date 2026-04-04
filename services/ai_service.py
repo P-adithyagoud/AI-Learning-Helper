@@ -130,7 +130,7 @@ EACH DAY MUST INCLUDE:
 * day (number)
 * topic (clear and specific)
 * plan (what exactly to do that day in simple steps)
-* practice_platform (if applicable)
+* questions: exactly 3 short questions as a plain JSON string array. Each question must directly relate to that day's topic and plan. Keep each question to 1 sentence. DO NOT give answers.
 * task (clear action task)
 
 ---
@@ -222,7 +222,11 @@ OUTPUT FORMAT (STRICT JSON ONLY):
 "day": 1,
 "topic": "Introduction to Python",
 "plan": "Understand what Python is, install Python, and run your first program.",
-"practice_platform": "Replit",
+"questions": [
+  "What is Python and why is it popular?",
+  "Explain how Python determines the type of a variable at runtime.",
+  "Write a program that takes two numbers as input and prints their sum, difference, product, and quotient."
+],
 "task": "Write a program to print your name and a message."
 }}
 ]
@@ -249,8 +253,7 @@ CONSTRAINTS:
 * Each day:
 
   * exactly 1 topic
-  * 1–2 resources
-  * 1 platform
+  * exactly 3 questions (easy, medium, hard)
   * 1 task
 
 ---
@@ -328,7 +331,7 @@ def call_groq(prompt: str, attempt: int = 1) -> str | None:
         "model": MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.4,
-        "max_tokens": 4000,
+        "max_tokens": 4096,
     }
 
     try:
