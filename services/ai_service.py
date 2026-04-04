@@ -22,7 +22,7 @@ INPUT:
 * Skill: {skill}
 * Level: {level}
 * Daily Time: {daily_hours}
-* Target Duration: auto
+* Target Duration: auto (max 4 weeks)
 
 ---
 
@@ -39,18 +39,9 @@ Generate a structured learning system divided into 4 sections:
 
 DURATION LOGIC:
 
-* If user provides duration → strictly follow it
-
-* If Target Duration = "auto":
-  → calculate based on:
-
-  * number of topics required to master the skill
-  * user level (Beginner → more time, Advanced → less time)
-  * daily available time
-
-* Duration must be realistic and NOT fixed
-
-* Allowed range: 2 to 12 weeks
+* Calculate based on skill complexity, level, and daily hours
+* STRICT LIMIT: maximum 4 weeks, minimum 1 week
+* Fewer weeks = smaller, more reliable output
 
 ---
 
@@ -118,10 +109,8 @@ The roadmap is for EXECUTION ONLY, not for learning resources.
 
 STRUCTURE:
 
-* Organize as:
-  Week → Days
-
-* Each week must have 5–7 days
+* Organize as: Week → Days
+* Each week has EXACTLY 5 days (no more, no less)
 
 ---
 
@@ -249,11 +238,12 @@ OUTPUT FORMAT (STRICT JSON ONLY):
 
 CONSTRAINTS:
 
-* Each week: 5–7 days
+* Weeks: 1–4 total
+* Each week: EXACTLY 5 days
 * Each day:
 
   * exactly 1 topic
-  * exactly 3 questions (easy, medium, hard)
+  * exactly 3 questions
   * 1 task
 
 ---
@@ -331,7 +321,7 @@ def call_groq(prompt: str, attempt: int = 1) -> str | None:
         "model": MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.4,
-        "max_tokens": 4096,
+        "max_tokens": 8000,
     }
 
     try:
@@ -339,12 +329,13 @@ def call_groq(prompt: str, attempt: int = 1) -> str | None:
         resp.raise_for_status()
         data = resp.json()
         raw = data["choices"][0]["message"]["content"]
-        logger.info(f"[Attempt {attempt}] Raw AI response (first 300 chars): {raw[:300]}")
+        logger.info(f"[Attempt {attempt}] Raw response length: {len(raw)} chars")
+        logger.info(f"[Attempt {attempt}] First 400 chars: {raw[:400]}")
         return raw
     except requests.Timeout:
-        logger.error(f"[Attempt {attempt}] Groq API timeout.")
+        logger.error(f"[Attempt {attempt}] Groq API timeout after {TIMEOUT}s")
     except requests.HTTPError as e:
-        logger.error(f"[Attempt {attempt}] HTTP error: {e.response.status_code} - {e.response.text}")
+        logger.error(f"[Attempt {attempt}] HTTP {e.response.status_code}: {e.response.text[:300]}")
     except Exception as e:
         logger.error(f"[Attempt {attempt}] Unexpected error: {e}")
 
