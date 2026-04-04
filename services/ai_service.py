@@ -341,7 +341,7 @@ def call_groq(prompt: str, attempt: int = 1) -> str | None:
     except requests.Timeout:
         logger.error(f"[Attempt {attempt}] Groq API timeout.")
     except requests.HTTPError as e:
-        logger.error(f"[Attempt {attempt}] HTTP error: {e.response.status_code} - {e.text}")
+        logger.error(f"[Attempt {attempt}] HTTP error: {e.response.status_code} - {e.response.text}")
     except Exception as e:
         logger.error(f"[Attempt {attempt}] Unexpected error: {e}")
 
