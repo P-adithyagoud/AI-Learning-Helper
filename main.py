@@ -49,23 +49,29 @@ def health_check():
 
 @app.route("/generate-plan", methods=["POST"])
 def generate_plan():
-    data = request.get_json(silent=True)
-    error = validate_plan_request(data)
-    if error:
-        return jsonify({"detail": error}), 422
+    try:
+        data = request.get_json(silent=True)
+        error = validate_plan_request(data)
+        if error:
+            return jsonify({"detail": error}), 422
 
-    skill = data["skill"].strip()
-    level = data["level"]
-    daily_hours = float(data["daily_hours"])
+        skill = data["skill"].strip()
+        level = data["level"]
+        daily_hours = float(data["daily_hours"])
 
-    logger.info(f"Plan request: skill={skill}, level={level}, hours={daily_hours}")
-    
-    result = generate_learning_plan(skill, level, daily_hours)
-    
-    if "error" in result:
-        return jsonify({"detail": result["error"]}), 502
-    
-    return jsonify(result)
+        logger.info(f"Plan request: skill={skill}, level={level}, hours={daily_hours}")
+        
+        result = generate_learning_plan(skill, level, daily_hours)
+        
+        if "error" in result:
+            return jsonify({"detail": result["error"]}), 502
+        
+        return jsonify(result)
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"Fatal endpoint error: {e}\n{error_trace}")
+        return jsonify({"detail": f"Server crash: {str(e)}", "trace": error_trace}), 500
 
 
 # Serve the frontend — index.html at root "/"
