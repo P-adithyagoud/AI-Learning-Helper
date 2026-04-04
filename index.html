@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Learning Planner</title>
+  <meta name="description" content="Generate your personalised AI-powered learning roadmap with curated resources, a week-by-week timeline, and expert tips on avoiding the most common learning mistakes." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            body: ['DM Sans', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a0a0f;
+      color: #e8e8f0;
+      min-height: 100vh;
+    }
+    body::before {
+      content: ''; position: fixed;
+      top: -20%; left: -10%; width: 60%; height: 60%;
+      background: radial-gradient(ellipse, rgba(251,191,36,0.07) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: ''; position: fixed;
+      bottom: -20%; right: -10%; width: 50%; height: 50%;
+      background: radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── GLASS BASE ── */
+    .glass-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px);
+    }
+
+    /* ── INPUTS ── */
+    .input-field {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #e8e8f0;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: rgba(251,191,36,0.6);
+      box-shadow: 0 0 0 3px rgba(251,191,36,0.08);
+    }
+    .input-field::placeholder { color: rgba(255,255,255,0.25); }
+    .input-field option { background: #1a1a2e; color: #e8e8f0; }
+
+    /* ── BUTTON ── */
+    .btn-generate {
+      background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+      color: #0a0a0f; font-weight: 700; letter-spacing: 0.03em;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(251,191,36,0.25);
+    }
+    .btn-generate:hover:not(:disabled) {
+      opacity: 0.92; transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(251,191,36,0.35);
+    }
+    .btn-generate:active:not(:disabled) { transform: translateY(0); }
+    .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── TABS ── */
+    .tab-bar {
+      display: flex; gap: 4px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 5px;
+    }
+    .tab-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 10px 16px; border-radius: 10px;
+      font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
+      color: rgba(255,255,255,0.35); cursor: pointer;
+      border: 1px solid transparent; background: transparent;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover:not(.active) { color: rgba(255,255,255,0.6); }
+    .tab-btn.active {
+      background: rgba(251,191,36,0.12);
+      color: #FBBF24;
+      border-color: rgba(251,191,36,0.22);
+    }
+
+    /* ── PANELS ── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeUp 0.3s ease forwards; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESOURCE CARDS ── */
+    .cat-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 12px;
+    }
+    .cat-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .resource-item {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px; padding: 14px 16px;
+      display: flex; align-items: flex-start; gap: 12px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.18s, box-shadow 0.18s;
+    }
+    .resource-item:hover {
+      border-color: rgba(251,191,36,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.28);
+    }
+    .free-badge  { background: rgba(52,211,153,0.12); color: #6ee7b7; }
+    .paid-badge  { background: rgba(251,191,36,0.12); color: #FBBF24; }
+
+    /* ── TIMELINE ── */
+    .week-card {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px; padding: 22px 24px;
+      transition: border-color 0.2s;
+    }
+    .week-card:hover { border-color: rgba(251,191,36,0.2); }
+    .week-num {
+      background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(251,191,36,0.06));
+      border: 1px solid rgba(251,191,36,0.25);
+      color: #FBBF24; border-radius: 20px;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px;
+      padding: 3px 14px; white-space: nowrap;
+    }
+    .goal-item {
+      display: flex; align-items: baseline; gap: 8px;
+      font-size: 13px; color: rgba(255,255,255,0.65);
+    }
+    .goal-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: #FBBF24; flex-shrink: 0; margin-top: 5px;
+    }
+
+    /* ── MISTAKES ── */
+    .mistake-card {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 20px 22px;
+      display: flex; gap: 16px;
+      transition: border-color 0.2s, transform 0.18s;
+    }
+    .mistake-card:hover {
+      border-color: rgba(239,68,68,0.28);
+      transform: translateY(-2px);
+    }
+    .mistake-num {
+      width: 32px; height: 32px;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px;
+      color: #fca5a5;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── MISC ── */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(10,10,15,0.3);
+      border-top-color: #0a0a0f; border-radius: 50%;
+      animation: spin 0.8s linear infinite; display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .duration-pill {
+      background: linear-gradient(135deg, rgba(251,191,36,0.2), rgba(251,191,36,0.07));
+      border: 1px solid rgba(251,191,36,0.3); color: #FBBF24;
+    }
+    .error-card {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.25);
+    }
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    }
+    #results { scroll-margin-top: 32px; }
+
+    /* stagger timeline cards */
+    .week-card:nth-child(1){animation-delay:.04s}
+    .week-card:nth-child(2){animation-delay:.11s}
+    .week-card:nth-child(3){animation-delay:.18s}
+    .week-card:nth-child(4){animation-delay:.25s}
+    .week-card:nth-child(5){animation-delay:.32s}
+    .week-card:nth-child(6){animation-delay:.39s}
+  </style>
+</head>
+<body class="relative">
+  <div class="relative z-10 max-w-5xl mx-auto px-4 py-12 sm:py-16">
+
+    <!-- Header -->
+    <header class="text-center mb-14">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card mb-6 text-xs font-body tracking-widest text-yellow-400 uppercase">
+        <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
+        AI-Powered Learning
+      </div>
+      <h1 class="font-display text-5xl sm:text-6xl tracking-tight text-white mb-4" style="font-weight:800;line-height:1.1;">
+        AI Learning<br/>
+        <span style="background:linear-gradient(135deg,#FBBF24,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Planner</span>
+      </h1>
+      <p class="font-body text-white/40 text-lg max-w-md mx-auto" style="font-weight:300;">
+        Generate your structured learning roadmap — week by week, day by day.
+      </p>
+    </header>
+
+    <!-- Form -->
+    <div class="glass-card rounded-2xl p-8 mb-12 relative overflow-hidden">
+      <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:radial-gradient(circle,rgba(251,191,36,0.08),transparent 70%);pointer-events:none;"></div>
+      <h2 class="font-display text-lg font-semibold text-white/80 mb-6">Configure Your Plan</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
+        <div class="sm:col-span-1">
+          <label class="block font-body text-xs font-medium text-white/40 uppercase tracking-widest mb-2">Skill</label>
+          <input id="skill" type="text" placeholder="e.g. Python, UI Design..."
+            class="input-field w-full rounded-xl px-4 py-3 font-body text-sm" />
+        </div>
+        <div>
+          <label class="block font-body text-xs font-medium text-white/40 uppercase tracking-widest mb-2">Level</label>
+          <select id="level" class="input-field w-full rounded-xl px-4 py-3 font-body text-sm">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-body text-xs font-medium text-white/40 uppercase tracking-widest mb-2">Daily Hours</label>
+          <input id="hours" type="number" min="1" max="10" step="0.5" value="2"
+            class="input-field w-full rounded-xl px-4 py-3 font-body text-sm" />
+        </div>
+      </div>
+      <div id="form-error" class="hidden error-card rounded-xl px-4 py-3 mb-5 text-sm font-body text-red-400"></div>
+      <button id="generate-btn" onclick="generatePlan()"
+        class="btn-generate w-full rounded-xl py-3.5 font-display text-sm flex items-center justify-center gap-2">
+        <span id="btn-text">Generate Learning Plan</span>
+        <span id="btn-spinner" class="spinner hidden"></span>
+      </button>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden">
+
+      <!-- Title + duration -->
+      <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
+        <div>
+          <h2 class="font-display text-2xl font-bold text-white">Your Roadmap</h2>
+          <p id="plan-subtitle" class="font-body text-sm text-white/35 mt-0.5"></p>
+        </div>
+        <div id="duration-badge" class="duration-pill px-5 py-2 rounded-full font-display text-sm font-semibold"></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-bar mb-8" role="tablist">
+        <button id="tab-resources" class="tab-btn active" onclick="switchTab('resources')" role="tab">
+          📚 Resources
+        </button>
+        <button id="tab-timeline" class="tab-btn" onclick="switchTab('timeline')" role="tab">
+          📅 Timeline
+        </button>
+        <button id="tab-mistakes" class="tab-btn" onclick="switchTab('mistakes')" role="tab">
+          ⚠️ Why Most Fail
+        </button>
+      </div>
+
+      <!-- Panel: Resources -->
+      <div id="panel-resources" class="tab-panel active">
+        <p class="font-body text-white/30 text-sm mb-6">Curated resources by category — click any to open.</p>
+        <div id="resources-container" class="flex flex-col gap-8"></div>
+      </div>
+
+      <!-- Panel: Timeline -->
+      <div id="panel-timeline" class="tab-panel">
+        <p class="font-body text-white/30 text-sm mb-6">Your week-by-week learning schedule.</p>
+        <div id="timeline-container" class="flex flex-col gap-5"></div>
+      </div>
+
+      <!-- Panel: Mistakes -->
+      <div id="panel-mistakes" class="tab-panel">
+        <p class="font-body text-white/30 text-sm mb-6">Common traps learners fall into — and exactly how to avoid them.</p>
+        <div id="mistakes-container" class="flex flex-col gap-4"></div>
+      </div>
+
+    </div>
+
+    <footer class="mt-20 text-center font-body text-xs text-white/15">
+      Built with FastAPI + Groq AI · AI Learning Planner
+    </footer>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:8000/generate-plan';
+    let isLoading = false;
+
+    /* ── TABS ── */
+    const TABS = ['resources', 'timeline', 'mistakes'];
+    function switchTab(name) {
+      TABS.forEach(t => {
+        document.getElementById('tab-' + t).classList.remove('active');
+        document.getElementById('panel-' + t).classList.remove('active');
+      });
+      document.getElementById('tab-' + name).classList.add('active');
+      document.getElementById('panel-' + name).classList.add('active');
+    }
+
+    /* ── LOADING ── */
+    function setLoading(state) {
+      isLoading = state;
+      document.getElementById('generate-btn').disabled = state;
+      document.getElementById('btn-spinner').classList.toggle('hidden', !state);
+      document.getElementById('btn-text').textContent = state ? 'Generating...' : 'Generate Learning Plan';
+    }
+    function showFormError(msg) {
+      const el = document.getElementById('form-error');
+      el.textContent = msg; el.classList.remove('hidden');
+    }
+    function clearFormError() {
+      const el = document.getElementById('form-error');
+      el.textContent = ''; el.classList.add('hidden');
+    }
+    function esc(s) {
+      return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    }
+
+    /* ── CATEGORY ICONS ── */
+    function catIcon(cat) {
+      const c = (cat || '').toLowerCase();
+      if (c.includes('video') || c.includes('course'))  return { icon:'▶️', bg:'rgba(239,68,68,0.12)' };
+      if (c.includes('book'))                            return { icon:'📗', bg:'rgba(52,211,153,0.12)' };
+      if (c.includes('practice') || c.includes('proj')) return { icon:'🛠️', bg:'rgba(99,102,241,0.12)' };
+      if (c.includes('doc'))                             return { icon:'📖', bg:'rgba(251,191,36,0.12)' };
+      if (c.includes('article') || c.includes('blog'))  return { icon:'📄', bg:'rgba(99,102,241,0.12)' };
+      return                                             { icon:'🔗', bg:'rgba(255,255,255,0.07)' };
+    }
+
+    /* ── RENDER RESOURCES ── */
+    function renderResources(categories) {
+      const container = document.getElementById('resources-container');
+      container.innerHTML = '';
+
+      if (!categories || !categories.length) {
+        container.innerHTML = '<p class="text-white/30 text-sm">No resources found.</p>';
+        return;
+      }
+
+      categories.forEach(cat => {
+        const { icon, bg } = catIcon(cat.category);
+        const section = document.createElement('div');
+
+        const items = (cat.items || []).map(item => {
+          const isUrl = (() => { try { new URL(item.url); return true; } catch { return false; } })();
+          const badgeClass = (item.type || '').toLowerCase() === 'paid' ? 'paid-badge' : 'free-badge';
+          const badgeLabel = (item.type || 'free').toLowerCase() === 'paid' ? 'Paid' : 'Free';
+          return `
+            <a href="${esc(item.url || '#')}" target="_blank" rel="noopener" class="resource-item">
+              <div style="width:8px;height:8px;border-radius:50%;background:#FBBF24;margin-top:6px;flex-shrink:0;"></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                  <span class="font-body text-sm font-medium text-white/85">${esc(item.title)}</span>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded ${badgeClass}">${badgeLabel}</span>
+                </div>
+                ${item.description ? `<p class="font-body text-xs text-white/40 leading-relaxed">${esc(item.description)}</p>` : ''}
+                <p class="font-body text-xs text-white/25 mt-1 truncate">${esc(item.url)}</p>
+              </div>
+              <span class="text-white/20 text-base flex-shrink-0">↗</span>
+            </a>
+          `;
+        }).join('');
+
+        section.innerHTML = `
+          <div class="cat-header">
+            <div class="cat-icon" style="background:${bg}">${icon}</div>
+            <h3 class="font-display text-sm font-semibold text-white/70 uppercase tracking-wider">${esc(cat.category)}</h3>
+          </div>
+          <div class="flex flex-col gap-3">${items}</div>
+        `;
+        container.appendChild(section);
+      });
+    }
+
+    /* ── RENDER TIMELINE ── */
+    function renderTimeline(timeline) {
+      const container = document.getElementById('timeline-container');
+      container.innerHTML = '';
+
+      if (!timeline || !timeline.length) {
+        container.innerHTML = '<p class="text-white/30 text-sm">No timeline found.</p>';
+        return;
+      }
+
+      timeline.forEach((wk, i) => {
+        const goals = (wk.goals || []).map(g => `
+          <div class="goal-item">
+            <div class="goal-dot"></div>
+            <span>${esc(g)}</span>
+          </div>
+        `).join('');
+
+        const card = document.createElement('div');
+        card.className = 'week-card';
+        card.style.animationDelay = `${i * 0.07}s`;
+        card.innerHTML = `
+          <div class="flex items-center gap-3 mb-4 flex-wrap">
+            <span class="week-num">Week ${wk.week}</span>
+            <span class="font-display text-base font-semibold text-white/80">${esc(wk.focus)}</span>
+          </div>
+          ${goals ? `<div class="flex flex-col gap-2 mb-4">${goals}</div>` : ''}
+          ${wk.daily_task ? `
+            <div style="border-top:1px solid rgba(255,255,255,0.06);margin-top:12px;padding-top:12px;">
+              <span class="font-body text-xs text-white/30 uppercase tracking-widest">Daily Task</span>
+              <p class="font-body text-sm text-white/55 leading-relaxed mt-1">${esc(wk.daily_task)}</p>
+            </div>
+          ` : ''}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /* ── RENDER MISTAKES ── */
+    function renderMistakes(mistakes) {
+      const container = document.getElementById('mistakes-container');
+      container.innerHTML = '';
+
+      if (!mistakes || !mistakes.length) {
+        container.innerHTML = '<p class="text-white/30 text-sm">No mistakes found.</p>';
+        return;
+      }
+
+      mistakes.forEach((m, i) => {
+        const card = document.createElement('div');
+        card.className = 'mistake-card';
+        card.innerHTML = `
+          <div class="mistake-num">${i + 1}</div>
+          <div class="flex-1">
+            <p class="font-display text-sm font-semibold text-white/85 mb-1">${esc(m.mistake)}</p>
+            <p class="font-body text-xs text-white/45 leading-relaxed mb-2">${esc(m.why_it_happens)}</p>
+            <p class="font-body text-xs leading-relaxed">
+              <span class="text-green-400 font-semibold">✓ Fix:</span>
+              <span class="text-white/55"> ${esc(m.how_to_avoid)}</span>
+            </p>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /* ── MAIN RENDER ── */
+    function renderResults(data) {
+      document.getElementById('duration-badge').textContent = `⏱ ${data.duration || '—'}`;
+      document.getElementById('plan-subtitle').textContent =
+        data.skill && data.level ? `${data.skill} · ${data.level}` : '';
+
+      renderResources(data.resources || []);
+      renderTimeline(data.timeline || []);
+      renderMistakes(data.common_mistakes || []);
+
+      switchTab('resources'); // always start on Resources tab
+
+      const resultsEl = document.getElementById('results');
+      resultsEl.classList.remove('hidden');
+      setTimeout(() => resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+
+    /* ── GENERATE ── */
+    async function generatePlan() {
+      if (isLoading) return;
+      clearFormError();
+
+      const skill = document.getElementById('skill').value.trim();
+      const level = document.getElementById('level').value;
+      const hrs   = parseFloat(document.getElementById('hours').value);
+
+      if (!skill || skill.length < 3) { showFormError('Please enter a skill with at least 3 characters.'); return; }
+      if (!['Beginner','Intermediate','Advanced'].includes(level)) { showFormError('Please select a valid level.'); return; }
+      if (isNaN(hrs) || hrs < 1 || hrs > 10) { showFormError('Daily hours must be between 1 and 10.'); return; }
+
+      setLoading(true);
+      document.getElementById('results').classList.add('hidden');
+
+      try {
+        const resp = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ skill, level, daily_hours: hrs }),
+        });
+        const data = await resp.json();
+
+        if (!resp.ok) { showFormError(data?.detail || 'An error occurred. Please try again.'); return; }
+        if (data.error) { showFormError(data.error); return; }
+
+        renderResults(data);
+      } catch (err) {
+        showFormError('Network error. Make sure the backend server is running.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && document.activeElement.id !== 'level') generatePlan();
+    });
+  </script>
+</body>
+</html>
