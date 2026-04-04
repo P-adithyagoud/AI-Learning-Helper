@@ -71,7 +71,7 @@ def generate_plan():
         import traceback
         error_trace = traceback.format_exc()
         logger.error(f"Fatal endpoint error: {e}\n{error_trace}")
-        return jsonify({"detail": f"Server crash: {str(e)}", "trace": error_trace}), 500
+        return jsonify({"detail": f"Server crash: {str(e)}", "trace": error_trace}), 400
 
 
 # Serve the frontend — index.html at root "/"
