@@ -11,59 +11,286 @@ TIMEOUT = 60.0
 
 
 def build_prompt(skill: str, level: str, daily_hours: float) -> str:
-    return f"""You are an expert learning coach. Generate a complete, structured learning plan for the given skill.
+    return f"""You are an expert learning planner and curriculum designer.
 
-STRICT RULES:
-- Return ONLY valid JSON. No extra text, no markdown, no backticks.
-- Start your response with {{ and end with }}
+Create a complete, structured, and realistic learning system.
+
+---
 
 INPUT:
-- Skill: {skill}
-- Level: {level}
-- Daily available time: {daily_hours} hour(s)
 
-OUTPUT FORMAT (return exactly this structure, no deviations):
+* Skill: {skill}
+* Level: {level}
+* Daily Time: {daily_hours}
+* Target Duration: auto
+
+---
+
+GOAL:
+
+Generate a structured learning system divided into 4 sections:
+
+1. Resources (what to learn from)
+2. Roadmap (step-by-step execution)
+3. Certifications (end goal)
+4. Common Mistakes (guidance + awareness)
+
+---
+
+DURATION LOGIC:
+
+* If user provides duration → strictly follow it
+
+* If Target Duration = "auto":
+  → calculate based on:
+
+  * number of topics required to master the skill
+  * user level (Beginner → more time, Advanced → less time)
+  * daily available time
+
+* Duration must be realistic and NOT fixed
+
+* Allowed range: 2 to 12 weeks
+
+---
+
+CURRICULUM STRUCTURE RULES:
+
+* Build COMPLETE roadmap from basics → intermediate → advanced
+* Ensure logical progression (no skipping fundamentals)
+* Cover all key concepts required for the skill
+
+EDGE CASE HANDLING:
+
+* If skill is too broad (e.g., "AI", "Programming"):
+  → break into core foundational topics
+
+* If skill is too niche:
+  → focus on fundamental concepts and practical understanding
+
+---
+
+RESOURCE RULES (UPGRADED — VERY IMPORTANT):
+
+Instead of random video links, provide structured learning sources.
+
+---
+
+YOUTUBE CHANNELS:
+
+* Provide TOP 5 high-quality YouTube channels for the given skill
+
+Each channel must include:
+
+* channel_name
+
+* coverage_level:
+  (Basic / Intermediate / Advanced / Full)
+
+* description (what they teach in 1 line)
+
+* link (channel link, NOT individual videos)
+
+* Prefer:
+
+  * well-known, trusted channels
+  * channels with structured playlists
+
+---
+
+PRACTICE PLATFORMS:
+
+* Provide 3–5 coding/practice platforms
+
+Each platform must include:
+
+* name
+* purpose (e.g., DSA practice, beginner coding, contests)
+* link
+
+---
+
+ROADMAP RULES (UPDATED — VERY IMPORTANT):
+
+The roadmap is for EXECUTION ONLY, not for learning resources.
+
+---
+
+STRUCTURE:
+
+* Organize as:
+  Week → Days
+
+* Each week must have 5–7 days
+
+---
+
+EACH DAY MUST INCLUDE:
+
+* day (number)
+* topic (clear and specific)
+* plan (what exactly to do that day in simple steps)
+* practice_platform (if applicable)
+* task (clear action task)
+
+---
+
+STRICT RULES:
+
+* DO NOT include any links in the roadmap
+* DO NOT include YouTube or article references
+* DO NOT repeat resources from the resources section
+* Focus only on:
+  * what to study
+  * what to practice
+  * what to complete
+
+---
+
+PLAN FORMAT (IMPORTANT):
+
+The "plan" field should describe:
+* what to learn
+* what to practice
+* how to approach the topic
+
+Example:
+"plan": "Understand variables and data types. Practice writing small programs using int, float, and strings."
+
+---
+
+CERTIFICATION RULES:
+
+* ALWAYS include 2–3 FREE certification platforms
+* Must be:
+
+  * relevant to the skill
+  * actually free
+  * useful for learners
+
+---
+
+COMMON MISTAKES RULES:
+
+* Provide 5–8 realistic mistakes learners make
+* Must be:
+
+  * practical
+  * specific
+  * actionable
+
+---
+
+ANTI-REPETITION RULES:
+
+* Do NOT repeat:
+
+  * topics
+  * resources
+  * tasks
+
+---
+
+OUTPUT FORMAT (STRICT JSON ONLY):
+
 {{
-  "skill": "{skill}",
-  "level": "{level}",
-  "duration": "X weeks",
-  "resources": [
-    {{
-      "category": "Category name (e.g. Video Courses, Books, Practice, Official Docs)",
-      "items": [
-        {{
-          "title": "Resource title",
-          "url": "https://real-url.com",
-          "description": "One line about why this resource is great",
-          "type": "free" or "paid"
-        }}
-      ]
-    }}
-  ],
-  "timeline": [
-    {{
-      "week": 1,
-      "focus": "Main focus area for this week",
-      "goals": ["Specific goal 1", "Specific goal 2", "Specific goal 3"],
-      "daily_task": "What to do each day this week in {daily_hours} hour(s)"
-    }}
-  ],
-  "common_mistakes": [
-    {{
-      "mistake": "Short name of the mistake",
-      "why_it_happens": "Brief explanation of why most learners fall into this trap",
-      "how_to_avoid": "Concrete action to avoid or fix this"
-    }}
-  ]
+"duration": "<calculated duration>",
+
+"resources": {{
+"youtube_channels": [
+{{
+"channel_name": "...",
+"coverage_level": "Basic",
+"description": "...",
+"link": "https://youtube.com/..."
+}}
+],
+"practice_platforms": [
+{{
+"name": "...",
+"purpose": "...",
+"link": "https://..."
+}}
+]
+}},
+
+"roadmap": [
+{{
+"week": 1,
+"days": [
+{{
+"day": 1,
+"topic": "Introduction to Python",
+"plan": "Understand what Python is, install Python, and run your first program.",
+"practice_platform": "Replit",
+"task": "Write a program to print your name and a message."
+}}
+]
+}}
+],
+
+"certifications": [
+{{
+"name": "...",
+"link": "https://..."
+}}
+],
+
+"common_mistakes": [
+"..."
+]
 }}
 
-Rules:
-- resources: 3-4 categories, 2-4 items each. Use REAL URLs (YouTube, official docs, MDN, freeCodeCamp, Coursera, books, etc.)
-- timeline: 3-6 weeks based on skill complexity and daily hours. Be specific.
-- common_mistakes: 4-6 mistakes. These should be REAL pitfalls specific to learning {skill}, not generic advice.
-- For YouTube URLs use format: https://www.youtube.com/watch?v=VIDEOID
+---
 
-Be highly specific to {skill} at {level} level. Do not give generic advice.
+CONSTRAINTS:
+
+* Each week: 5–7 days
+* Each day:
+
+  * exactly 1 topic
+  * 1–2 resources
+  * 1 platform
+  * 1 task
+
+---
+
+SYSTEM STABILITY RULES:
+
+* Maintain consistency for similar inputs
+* Keep output concise (avoid unnecessary verbosity)
+
+---
+
+PRIORITY ORDER (VERY IMPORTANT):
+
+1. Valid JSON output (highest priority)
+2. Logical curriculum structure
+3. Free and reliable resources
+4. Non-repetition
+5. Conciseness
+
+---
+
+STRICT OUTPUT RULES:
+
+* Output ONLY valid JSON
+* No explanation
+* No markdown
+* No extra text
+
+---
+
+QUALITY CHECK BEFORE OUTPUT:
+
+* Is JSON valid and clean?
+* Is duration realistic?
+* Is curriculum logically structured?
+* Are resources free and reliable?
+* Is there zero repetition?
+* Are mistakes useful and practical?
+
+Return ONLY the final JSON.
 """
 
 
