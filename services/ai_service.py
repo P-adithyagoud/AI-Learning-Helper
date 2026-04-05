@@ -33,16 +33,16 @@ Generate a structured learning system divided into 4 sections:
 1. Resources (what to learn from)
 2. Roadmap (step-by-step execution)
 3. Certifications (end goal)
-4. Common Mistakes (guidance + awareness)
+4. Questions (knowledge check)
 
 ---
 
 DURATION LOGIC:
 
-* Calculate the TOTAL NUMBER OF DAYS based on skill complexity, level, and daily hours ({daily_hours} hours/day).
-* A simple topic with high daily hours might only require 3-7 days.
-* A complex topic with low daily hours might require up to 14 days limit.
-* IMPORTANT: Do NOT exceed 14 days under any circumstances to keep the response concise.
+* Calculate the TOTAL NUMBER OF DAYS based purely on skill complexity, level, and daily hours ({daily_hours} hours/day).
+* A simple topic with high daily hours might require 3-7 days.
+* A complex topic might require up to 14 days (maximum 2 weeks).
+* IMPORTANT: DO NOT exceed 14 days (2 weeks) under any circumstances to prevent API limits from being reached.
 
 ---
 
@@ -121,7 +121,6 @@ EACH DAY MUST INCLUDE:
 * day (number)
 * topic (clear and specific)
 * plan (what exactly to do that day in simple steps)
-* questions: exactly 3 short questions as a plain JSON string array. Each question must directly relate to that day's topic and plan. Keep each question to 1 sentence. DO NOT give answers.
 * task (clear action task)
 
 ---
@@ -131,6 +130,7 @@ STRICT RULES:
 * DO NOT include any links in the roadmap
 * DO NOT include YouTube or article references
 * DO NOT repeat resources from the resources section
+* DO NOT include questions in the roadmap days (they will be provided at the end)
 * Focus only on:
   * what to study
   * what to practice
@@ -161,14 +161,13 @@ CERTIFICATION RULES:
 
 ---
 
-COMMON MISTAKES RULES:
+QUESTIONS RULES:
 
-* Provide 5–8 realistic mistakes learners make
-* Must be:
-
-  * practical
-  * specific
-  * actionable
+* Provide exactly 30 interview-level questions.
+* These questions must deeply test core concepts, edge cases, and practical implementation scenarios across the learned skill.
+* Keep each question strictly to 1 sentence
+* DO NOT provide answers
+* Provide as a plain JSON string array
 
 ---
 
@@ -231,7 +230,7 @@ OUTPUT FORMAT (STRICT JSON ONLY):
 }}
 ],
 
-"common_mistakes": [
+"questions": [
 "..."
 ]
 }}
@@ -244,7 +243,7 @@ CONSTRAINTS:
 * Each day:
 
   * exactly 1 topic
-  * exactly 3 questions
+  * purely 1 straightforward plan
   * 1 task
 
 ---
@@ -282,7 +281,7 @@ QUALITY CHECK BEFORE OUTPUT:
 * Is curriculum logically structured?
 * Are resources free and reliable?
 * Is there zero repetition?
-* Are mistakes useful and practical?
+* Are the questions useful for checking knowledge?
 
 Return ONLY the final JSON.
 """
@@ -322,7 +321,7 @@ def call_groq(prompt: str, attempt: int = 1) -> str | None:
         "model": MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.4,
-        "max_tokens": 3000,
+        "max_tokens": 4500,
     }
 
     try:

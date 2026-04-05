@@ -541,7 +541,7 @@
         <button id="tab-resources"     class="tab-btn active" onclick="switchTab('resources')"     role="tab">📚 Resources</button>
         <button id="tab-roadmap"       class="tab-btn"        onclick="switchTab('roadmap')"       role="tab">📅 Roadmap</button>
         <button id="tab-certifications"class="tab-btn"        onclick="switchTab('certifications')"role="tab">🏆 Certifications</button>
-        <button id="tab-mistakes"      class="tab-btn"        onclick="switchTab('mistakes')"      role="tab">⚠️ Mistakes</button>
+        <button id="tab-questions"     class="tab-btn"        onclick="switchTab('questions')"     role="tab">❓ Questions</button>
       </div>
 
       <!-- Panel: Resources -->
@@ -562,10 +562,10 @@
         <div id="certifications-container"></div>
       </div>
 
-      <!-- Panel: Mistakes -->
-      <div id="panel-mistakes" class="tab-panel">
-        <p class="panel-note">Common traps learners fall into.</p>
-        <div id="mistakes-container"></div>
+      <!-- Panel: Questions -->
+      <div id="panel-questions" class="tab-panel">
+        <p class="panel-note">Test your knowledge with these core questions.</p>
+        <div id="questions-container" class="questions-wrap" style="gap: 12px; margin-top: 1rem;"></div>
       </div>
 
     </div>
@@ -581,7 +581,7 @@
     let isLoading = false;
 
     /* ── TABS ── */
-    const TABS = ['resources', 'roadmap', 'certifications', 'mistakes'];
+    const TABS = ['resources', 'roadmap', 'certifications', 'questions'];
     function switchTab(name) {
       TABS.forEach(t => {
         document.getElementById('tab-' + t).classList.remove('active');
@@ -743,25 +743,6 @@
                 </div>
               </div>
               <p class="day-plan">${esc(d.plan)}</p>
-              ${(d.questions && d.questions.length) ? `
-              <span class="questions-label">Quick Check</span>
-              <div class="questions-wrap">
-                ${d.questions.map((q, qi) => {
-                  const qKey = getDayKey(currentPlanKey, checkNum, d.day) + '_q' + qi;
-                  const qDone = localStorage.getItem(qKey) === '1';
-                  const qText    = typeof q === 'object' ? q.question   : q;
-                  const qDiff    = typeof q === 'object' ? q.difficulty : 'easy';
-                  const qType    = typeof q === 'object' ? q.type       : 'theory';
-                  return `<div class="question-item${qDone ? ' q-done' : ''}" data-qkey="${qKey}">
-                    <span class="q-text">${esc(qText)}</span>
-                    <div class="q-check">
-                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                        <polyline points="1,4 3.5,7 9,1" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>`;
-                }).join('')}
-              </div>` : ''}
               <div class="action-box">
                 <span class="action-lbl">Action Task</span>
                 <p class="action-txt">${esc(d.task)}</p>
@@ -776,15 +757,6 @@
           btn.addEventListener('click', () => {
             const daySep = btn.closest('.day-sep');
             toggleDay(daySep, daySep.dataset.key);
-            renderDashboard();
-          });
-        });
-
-        /* attach click handlers to question checkboxes */
-        card.querySelectorAll('.question-item').forEach(item => {
-          item.querySelector('.q-check').addEventListener('click', () => {
-            const done = item.classList.toggle('q-done');
-            localStorage.setItem(item.dataset.qkey, done ? '1' : '');
             renderDashboard();
           });
         });
@@ -817,21 +789,41 @@
       });
     }
 
-    /* ── RENDER MISTAKES ── */
-    function renderMistakes(mistakes) {
-      const container = document.getElementById('mistakes-container');
+    /* ── RENDER QUESTIONS (former Mistakes) ── */
+    function renderQuestions(questionsList) {
+      const container = document.getElementById('questions-container');
       container.innerHTML = '';
-      if (!mistakes || !mistakes.length) {
-        container.innerHTML = '<p class="panel-note">No mistakes found.</p>';
+      if (!questionsList || !questionsList.length) {
+        container.innerHTML = '<p class="panel-note">No questions found.</p>';
         return;
       }
-      mistakes.forEach((m, i) => {
-        const card = document.createElement('div');
-        card.className = 'mistake-card';
-        card.innerHTML = `
-          <div class="mistake-num">${i + 1}</div>
-          <p class="mistake-text">${esc(m)}</p>`;
-        container.appendChild(card);
+      questionsList.forEach((q, i) => {
+        const qKey = currentPlanKey + '_ovq_' + i;
+        const qDone = localStorage.getItem(qKey) === '1';
+        const qText = typeof q === 'object' ? q.question || q.text : q;
+
+        const el = document.createElement('div');
+        el.className = 'question-item' + (qDone ? ' q-done' : '');
+        el.dataset.qkey = qKey;
+        el.style.padding = '14px 16px';
+        el.style.fontSize = '14px';
+        el.style.marginBottom = '8px';
+        el.innerHTML = `
+          <span class="q-text" style="font-size: 14px;">${esc(qText)}</span>
+          <div class="q-check">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+              <polyline points="1,4 3.5,7 9,1" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        `;
+        
+        el.querySelector('.q-check').addEventListener('click', () => {
+          const done = el.classList.toggle('q-done');
+          localStorage.setItem(qKey, done ? '1' : '');
+          renderDashboard();
+        });
+
+        container.appendChild(el);
       });
     }
 
@@ -848,7 +840,7 @@
       renderResources(data.resources || {});
       renderRoadmap(data.roadmap || []);
       renderCertifications(data.certifications || []);
-      renderMistakes(data.common_mistakes || []);
+      renderQuestions(data.questions || []);
 
       renderDashboard();
 
