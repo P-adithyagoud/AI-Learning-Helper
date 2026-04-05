@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - AI Learning Planner</title>
+  <style>
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0a0a0f;
+      color: #e8e8f0;
+      min-height: 100vh;
+      margin: 0; padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    
+    /* Dynamic background equivalent */
+    body::before {
+      content: ''; position: fixed;
+      top: -20%; left: -10%; width: 60%; height: 60%;
+      background: radial-gradient(ellipse, rgba(251,191,36,0.07) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: ''; position: fixed;
+      bottom: -20%; right: -10%; width: 50%; height: 50%;
+      background: radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── RETURN HOME ── */
+    .back-btn {
+      position: absolute;
+      top: 2rem;
+      left: 2rem;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: color 0.2s, transform 0.2s;
+      z-index: 20;
+    }
+    .back-btn:hover {
+      color: #fff;
+      transform: translateX(-4px);
+    }
+
+    /* ── SCENE & FLIPPER ── */
+    .scene {
+      width: 100%;
+      max-width: 420px;
+      perspective: 1200px;
+      padding: 1rem;
+      z-index: 10;
+    }
+
+    .flipper {
+      width: 100%;
+      position: relative;
+      transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transform-style: preserve-3d;
+    }
+
+    .flipper.flip {
+      transform: rotateY(180deg);
+    }
+
+    /* ── CARDS (Front & Back) ── */
+    .card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 1.5rem;
+      padding: 2.5rem 2rem;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      -webkit-backface-visibility: hidden; /* Safari */
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .card.front {
+      position: relative; /* defines layout height */
+      z-index: 2;
+      transform: rotateY(0deg);
+    }
+
+    .card.back {
+      transform: rotateY(180deg);
+      height: 100%;
+      z-index: 1;
+    }
+
+    .form-glow {
+      position: absolute; top: -30px; right: -30px;
+      width: 100px; height: 100px;
+      background: radial-gradient(circle,rgba(251,191,36,0.1),transparent 70%);
+      pointer-events: none;
+    }
+    .card.back .form-glow {
+      background: radial-gradient(circle,rgba(99,102,241,0.1),transparent 70%);
+      left: -30px; right: auto;
+    }
+
+    .card h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+    }
+    .card p.subtitle {
+      margin: 0 0 2rem;
+      text-align: center;
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ── FORM ELEMENTS ── */
+    .input-group {
+      margin-bottom: 1.25rem;
+    }
+    .input-group label {
+      display: block;
+      font-size: 0.75rem; font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+    .input-field {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #e8e8f0;
+      border-radius: 0.75rem;
+      padding: 0.875rem 1rem;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: rgba(251,191,36,0.5);
+      box-shadow: 0 0 0 3px rgba(251,191,36,0.08);
+    }
+    .card.back .input-field:focus {
+      border-color: rgba(99,102,241,0.5);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+    }
+
+    /* ── BUTTONS ── */
+    .btn-submit {
+      width: 100%; border-radius: 0.75rem;
+      padding: 1rem 0; margin-top: 1rem;
+      background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+      color: #0a0a0f; font-weight: 700; font-size: 0.95rem;
+      letter-spacing: 0.03em; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(251,191,36,0.25);
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(251,191,36,0.35);
+    }
+    .btn-submit:active { transform: translateY(0); }
+    
+    .card.back .btn-submit {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(99,102,241,0.25);
+    }
+    .card.back .btn-submit:hover {
+      box-shadow: 0 6px 28px rgba(99,102,241,0.35);
+    }
+
+    .toggle-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.5);
+    }
+    .toggle-link button {
+      background: none; border: none;
+      color: #FBBF24; font-weight: 600;
+      cursor: pointer; padding: 0; font-size: inherit;
+      transition: color 0.2s;
+    }
+    .toggle-link button:hover { color: #F59E0B; text-decoration: underline; }
+    
+    .card.back .toggle-link button { color: #818cf8; }
+    .card.back .toggle-link button:hover { color: #6366f1; }
+
+    /* Messages */
+    .msg-box {
+      border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 1rem;
+      font-size: 0.875rem; text-align: center; display: none;
+    }
+    .msg-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+    .msg-success { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: #6ee7b7; }
+  </style>
+</head>
+<body>
+
+  <a href="/" class="back-btn">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"></line>
+      <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+    Back to Planner
+  </a>
+
+  <div class="scene">
+    <div class="flipper" id="flipper">
+      
+      <!-- SIGN IN (FRONT) -->
+      <div class="card front">
+        <div class="form-glow"></div>
+        <h2>Welcome Back</h2>
+        <p class="subtitle">Enter your credentials to access your plans.</p>
+
+        <div id="signin-msg" class="msg-box"></div>
+
+        <form id="signin-form" onsubmit="handleSignin(event)">
+          <div class="input-group">
+            <label for="si-email">Email</label>
+            <input type="email" id="si-email" class="input-field" placeholder="you@example.com" required>
+          </div>
+          <div class="input-group">
+            <label for="si-password">Password</label>
+            <input type="password" id="si-password" class="input-field" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-submit">Sign In</button>
+        </form>
+
+        <div class="toggle-link">
+          Don't have an account? <button type="button" onclick="toggleFlip()">Sign Up</button>
+        </div>
+      </div>
+
+      <!-- SIGN UP (BACK) -->
+      <div class="card back">
+        <div class="form-glow"></div>
+        <h2>Create Account</h2>
+        <p class="subtitle">Join us and start your learning journey.</p>
+
+        <div id="signup-msg" class="msg-box"></div>
+
+        <form id="signup-form" onsubmit="handleSignup(event)">
+          <div class="input-group">
+            <label for="su-name">Full Name</label>
+            <input type="text" id="su-name" class="input-field" placeholder="John Doe" required>
+          </div>
+          <div class="input-group">
+            <label for="su-email">Email</label>
+            <input type="email" id="su-email" class="input-field" placeholder="you@example.com" required>
+          </div>
+          <div class="input-group">
+            <label for="su-password">Password</label>
+            <input type="password" id="su-password" class="input-field" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-submit">Create Account</button>
+        </form>
+
+        <div class="toggle-link">
+          Already have an account? <button type="button" onclick="toggleFlip()">Sign In</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function toggleFlip() {
+      document.getElementById('flipper').classList.toggle('flip');
+      clearMessages();
+    }
+
+    function clearMessages() {
+      ['signin-msg', 'signup-msg'].forEach(id => {
+        const el = document.getElementById(id);
+        el.style.display = 'none';
+        el.className = 'msg-box';
+        el.textContent = '';
+      });
+    }
+
+    function showMessage(type, formType, text) {
+      const el = document.getElementById(formType + '-msg');
+      el.textContent = text;
+      el.className = `msg-box msg-${type}`;
+      el.style.display = 'block';
+    }
+
+    async function handleSignin(e) {
+      e.preventDefault();
+      clearMessages();
+      const email = document.getElementById('si-email').value;
+      const password = document.getElementById('si-password').value;
+
+      try {
+        const res = await fetch('/api/signin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        
+        if(res.ok && data.success) {
+          showMessage('success', 'signin', data.message);
+          if (data.name) {
+            localStorage.setItem('userName', data.name);
+          }
+          // In a real app we'd redirect to dashboard or set localStorage token
+          setTimeout(() => { window.location.href = '/'; }, 1000);
+        } else {
+          showMessage('error', 'signin', data.message || 'Error occurred');
+        }
+      } catch (err) {
+        showMessage('error', 'signin', 'Network error. Please try again.');
+      }
+    }
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      clearMessages();
+      const name = document.getElementById('su-name').value;
+      const email = document.getElementById('su-email').value;
+      const password = document.getElementById('su-password').value;
+
+      try {
+        const res = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        
+        if(res.ok && data.success) {
+          showMessage('success', 'signup', data.message);
+          setTimeout(() => toggleFlip(), 1500); // flip back to sign in
+        } else {
+          showMessage('error', 'signup', data.message || 'Error occurred');
+        }
+      } catch (err) {
+        showMessage('error', 'signup', 'Network error. Please try again.');
+      }
+    }
+  </script>
+</body>
+</html>

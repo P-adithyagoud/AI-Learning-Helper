@@ -79,6 +79,29 @@ def generate_plan():
 def serve_frontend():
     return send_file(os.path.join(os.path.dirname(__file__), "index.html"))
 
+@app.route("/login", methods=["GET"])
+def serve_login():
+    return send_file(os.path.join(os.path.dirname(__file__), "login.html"))
+
+@app.route("/api/signin", methods=["POST"])
+def api_signin():
+    data = request.get_json(silent=True)
+    if not data or not data.get("email") or not data.get("password"):
+        return jsonify({"success": False, "message": "Email and password required"}), 400
+    
+    # Mock logic: extract name from email
+    email = data.get("email")
+    name = email.split("@")[0].capitalize()
+    return jsonify({"success": True, "message": "Successfully signed in", "token": "mock-jwt-token", "name": name})
+
+@app.route("/api/signup", methods=["POST"])
+def api_signup():
+    data = request.get_json(silent=True)
+    if not data or not data.get("email") or not data.get("password") or not data.get("name"):
+        return jsonify({"success": False, "message": "Name, email, and password required"}), 400
+    
+    # Mock logic: successful registration
+    return jsonify({"success": True, "message": "Successfully registered. Please sign in."})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)

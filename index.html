@@ -440,6 +440,26 @@
 </head>
 <body>
   <div class="page-wrap">
+    
+    <!-- Top Nav -->
+    <nav style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <div id="user-greeting" style="font-size: 0.95rem; font-weight: 600; color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 0.5rem;"></div>
+      <a id="auth-btn" href="/login" style="
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 0.5rem 1.25rem; border-radius: 9999px;
+        background: rgba(255,255,255,0.05); color: #e8e8f0;
+        text-decoration: none; font-size: 0.85rem; font-weight: 600;
+        border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s;
+      " onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.transform='translateY(-1px)';this.style.borderColor='rgba(251,191,36,0.4)'"
+        onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.transform='translateY(0)';this.style.borderColor='rgba(255,255,255,0.1)'">
+        <span id="auth-btn-text">Sign In</span>
+        <svg id="auth-btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+          <polyline points="10 17 15 12 10 7"></polyline>
+          <line x1="15" y1="12" x2="3" y2="12"></line>
+        </svg>
+      </a>
+    </nav>
 
     <!-- Header -->
     <header class="site-header">
@@ -579,6 +599,29 @@
       : '/generate-plan';
 
     let isLoading = false;
+
+    /* ── AUTHENTICATION CHECK ── */
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedName = localStorage.getItem("userName");
+      if (savedName) {
+        const greeting = document.getElementById("user-greeting");
+        greeting.innerHTML = `👋 Hi, <span style="color:#FBBF24;">${esc(savedName)}</span>`;
+        
+        const authBtnText = document.getElementById("auth-btn-text");
+        authBtnText.textContent = "Sign Out";
+        
+        const authBtnIcon = document.getElementById("auth-btn-icon");
+        authBtnIcon.innerHTML = `<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>`;
+        
+        const authBtn = document.getElementById("auth-btn");
+        authBtn.href = "#";
+        authBtn.onclick = (e) => {
+          e.preventDefault();
+          localStorage.removeItem("userName");
+          window.location.reload();
+        };
+      }
+    });
 
     /* ── TABS ── */
     const TABS = ['resources', 'roadmap', 'certifications', 'questions'];
