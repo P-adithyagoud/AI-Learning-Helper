@@ -436,15 +436,70 @@
     .hidden { display: none !important; }
     .panel-note { font-size: 0.875rem; color: rgba(255,255,255,0.3); margin-bottom: 1.5rem; }
     footer { margin-top: 5rem; text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.15); }
+
+    /* ── HISTORY DRAWER ── */
+    .history-drawer {
+      position: fixed; top: 0; right: -350px; width: 350px; height: 100vh;
+      background: rgba(10,10,15,0.95); border-left: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px); z-index: 1000;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex; flex-direction: column;
+    }
+    .history-drawer.open { right: 0; box-shadow: -10px 0 30px rgba(0,0,0,0.5); }
+    .hd-header {
+      padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .hd-header h3 { margin: 0; font-size: 1.125rem; font-weight: 700; color: #fff; }
+    .hd-close { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; padding: 0.5rem; transition: color 0.2s;}
+    .hd-close:hover { color: #fff; }
+    .hd-content { padding: 1.5rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 1rem; }
+    .hist-card {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 1rem; cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s, background 0.2s;
+    }
+    .hist-card:hover { border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.05); transform: translateY(-2px); }
+    .hist-title { font-size: 0.9rem; font-weight: 600; color: #fff; margin: 0 0 0.25rem; }
+    .hist-meta { font-size: 0.75rem; color: rgba(255,255,255,0.4); display: flex; justify-content: space-between; }
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+      backdrop-filter: blur(2px);
+    }
+    .overlay.open { opacity: 1; pointer-events: auto; }
   </style>
 </head>
 <body>
+
+  <!-- Overlay and Drawer -->
+  <div class="overlay" id="history-overlay" onclick="toggleHistory()"></div>
+  <div class="history-drawer" id="history-drawer">
+    <div class="hd-header">
+      <h3>Your History</h3>
+      <button class="hd-close" onclick="toggleHistory()">✕</button>
+    </div>
+    <div class="hd-content" id="history-container">
+      <!-- Cards rendered here -->
+    </div>
+  </div>
   <div class="page-wrap">
     
     <!-- Top Nav -->
     <nav style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
       <div id="user-greeting" style="font-size: 0.95rem; font-weight: 600; color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 0.5rem;"></div>
-      <a id="auth-btn" href="/login" style="
+      <div style="display: flex; gap: 0.5rem;">
+        <button onclick="toggleHistory()" style="
+          display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;
+          padding: 0.5rem 1rem; border-radius: 9999px;
+          background: rgba(255,255,255,0.05); color: #e8e8f0;
+          border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; font-family: inherit; font-size: 0.85rem; font-weight: 600;
+        " onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.borderColor='rgba(255,255,255,0.2)'"
+          onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.1)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          History
+        </button>
+        <a id="auth-btn" href="/login" style="
         display: inline-flex; align-items: center; gap: 0.5rem;
         padding: 0.5rem 1.25rem; border-radius: 9999px;
         background: rgba(255,255,255,0.05); color: #e8e8f0;
@@ -459,6 +514,7 @@
           <line x1="15" y1="12" x2="3" y2="12"></line>
         </svg>
       </a>
+      </div>
     </nav>
 
     <!-- Header -->
@@ -618,8 +674,23 @@
         authBtn.onclick = (e) => {
           e.preventDefault();
           localStorage.removeItem("userName");
+          localStorage.removeItem("saved_plan");
           window.location.reload();
         };
+      }
+      
+      const savedPlan = localStorage.getItem("saved_plan");
+      if (savedPlan) {
+        try {
+          const data = JSON.parse(savedPlan);
+          // populate form to match previous state
+          if (data.skill) document.getElementById("skill").value = data.skill;
+          if (data.level) document.getElementById("level").value = data.level;
+          if (data.daily_hours) document.getElementById("hours").value = data.daily_hours;
+          renderResults(data, true);
+        } catch(e) {
+          console.error("Error parsing saved plan", e);
+        }
       }
     });
 
@@ -870,14 +941,103 @@
       });
     }
 
+    /* ── HISTORY DRAWER LOGIC ── */
+    function toggleHistory() {
+      document.getElementById('history-drawer').classList.toggle('open');
+      document.getElementById('history-overlay').classList.toggle('open');
+      renderHistory();
+    }
+
+    function saveToHistory(data) {
+      let history = localStorage.getItem("roadmap_history");
+      history = history ? JSON.parse(history) : [];
+      data.id = data.id || Date.now().toString(); // unique id
+      data.timestamp = data.timestamp || new Date().toLocaleString();
+      
+      // Update if exists, otherwise prepend
+      const existingIdx = history.findIndex(h => h.id === data.id);
+      if (existingIdx !== -1) {
+        history[existingIdx] = data;
+      } else {
+        history.unshift(data);
+      }
+      
+      // Limit to 10 entries optionally, but we'll allow 50
+      if (history.length > 50) history.pop();
+      
+      localStorage.setItem("roadmap_history", JSON.stringify(history));
+    }
+
+    function loadFromHistory(id) {
+      let history = localStorage.getItem("roadmap_history");
+      if (!history) return;
+      history = JSON.parse(history);
+      const plan = history.find(h => h.id === id);
+      if (plan) {
+        // populate form
+        if (plan.skill) document.getElementById("skill").value = plan.skill;
+        if (plan.level) document.getElementById("level").value = plan.level;
+        if (plan.daily_hours) document.getElementById("hours").value = plan.daily_hours;
+        renderResults(plan, true); // true = skipSave so we don't duplicate
+        toggleHistory(); // close drawer
+        
+        // ensure this becomes the active saved_plan for reloads
+        localStorage.setItem("saved_plan", JSON.stringify(plan));
+      }
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('history-container');
+      container.innerHTML = '';
+      let history = localStorage.getItem("roadmap_history");
+      if (!history) {
+        container.innerHTML = '<p class="panel-note" style="text-align:center; padding: 2rem;">No history found.</p>';
+        return;
+      }
+      history = JSON.parse(history);
+      
+      if (history.length === 0) {
+        container.innerHTML = '<p class="panel-note" style="text-align:center; padding: 2rem;">No history found.</p>';
+        return;
+      }
+
+      history.forEach(plan => {
+        const card = document.createElement('div');
+        card.className = 'hist-card';
+        card.onclick = () => loadFromHistory(plan.id);
+        
+        const title = (plan.skill || 'Custom Plan').length > 25 ? (plan.skill || 'Custom Plan').substring(0, 25) + '...' : (plan.skill || 'Custom Plan');
+        
+        card.innerHTML = `
+          <h4 class="hist-title">${esc(title)}</h4>
+          <div class="hist-meta">
+            <span>${esc(plan.level || '')}</span>
+            <span>${esc(plan.timestamp || '')}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
     /* ── MAIN RENDER ── */
-    function renderResults(data) {
+    function renderResults(data, skipSave = false) {
+      if (!skipSave) {
+        // Embed the configured form inputs into the data object if they are missing
+        if(!data.skill) data.skill = document.getElementById("skill").value;
+        if(!data.level) data.level = document.getElementById("level").value;
+        if(!data.daily_hours) data.daily_hours = document.getElementById("hours").value;
+        
+        // Save current active plan
+        localStorage.setItem("saved_plan", JSON.stringify(data));
+        // Add to history list
+        saveToHistory(data);
+      }
       document.getElementById('duration-badge').textContent = `⏱ ${data.duration || '—'}`;
       document.getElementById('plan-subtitle').textContent =
         data.skill && data.level ? `${data.skill} · ${data.level}` : '';
 
       /* build a stable key from skill+level so ticks survive re-renders */
-      currentPlanKey = (data.skill + '_' + data.level).toLowerCase().replace(/\s+/g,'_');
+      currentPlanKey = ((data.skill||'') + '_' + (data.level||'')).toLowerCase().replace(/\s+/g,'_');
       allDayKeys = []; /* reset for fresh render */
 
       renderResources(data.resources || {});
