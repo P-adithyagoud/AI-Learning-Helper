@@ -154,7 +154,7 @@ Example:
 CERTIFICATION RULES:
 
 * Provide 4 certification platforms: Coursera, Udemy, and 2 other FREE certification platforms.
-* CRITICAL: Ensure links are 100% accurate and working. Most generated links are 404s. Do not hallucinate exact course links if unsure; instead, provide a search link (e.g., https://www.coursera.org/search?query=SkillName or https://www.udemy.com/courses/search/?q=SkillName) to guarantee it works.
+* CRITICAL: Only mention the organization names. DO NOT provide links. Let users search for them organically.
 * Must be relevant to the skill and highly useful for learners.
 
 ---
@@ -215,10 +215,10 @@ OUTPUT FORMAT (STRICT JSON ONLY):
 ],
 
 "certifications": [
-{{
-"name": "...",
-"link": "https://..."
-}}
+"Coursera",
+"Udemy",
+"...",
+"..."
 ],
 
 "questions": [

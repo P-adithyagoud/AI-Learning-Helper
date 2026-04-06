@@ -874,18 +874,19 @@
         return;
       }
       certs.forEach(cert => {
-        const a = document.createElement('a');
-        a.href = esc(cert.link || '#'); a.target = '_blank';
-        a.className = 'resource-item';
-        a.style.marginBottom = '1rem';
-        a.innerHTML = `
+        const certName = typeof cert === 'string' ? cert : (cert.name || '');
+        const item = document.createElement('div');
+        item.className = 'resource-item';
+        item.style.marginBottom = '1rem';
+        item.style.cursor = 'default';
+        item.innerHTML = `
           <div class="mistake-num" style="background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.2);color:#6ee7b7;">🏆</div>
           <div class="ri-body">
-            <p class="ri-name">${esc(cert.name)}</p>
-            <p class="ri-url">${esc(cert.link)}</p>
+            <p class="ri-name">${esc(certName)}</p>
+            <p class="ri-url" style="color:rgba(255,255,255,0.4);">Search this platform to explore courses.</p>
           </div>
-          <span class="ri-arrow">↗</span>`;
-        container.appendChild(a);
+        `;
+        container.appendChild(item);
       });
     }
 
