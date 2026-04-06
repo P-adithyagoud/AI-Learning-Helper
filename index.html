@@ -728,7 +728,7 @@
     function renderResources(resources) {
       const container = document.getElementById('resources-container');
       container.innerHTML = '';
-      if (!resources || (!resources.youtube_channels?.length && !resources.practice_platforms?.length)) {
+      if (!resources || !resources.youtube_channels?.length) {
         container.innerHTML = '<p class="panel-note">No structured resources found.</p>';
         return;
       }
@@ -749,21 +749,7 @@
         container.innerHTML += html;
       }
 
-      if (resources.practice_platforms && resources.practice_platforms.length) {
-        let html = '<p class="section-label">🛠️ Practice Platforms</p><div style="display:flex;flex-direction:column;gap:1rem;">';
-        resources.practice_platforms.forEach(r => {
-          html += `<a href="${esc(r.link||'#')}" target="_blank" class="resource-item">
-            <div class="ri-body">
-              <p class="ri-name">${esc(r.name)}</p>
-              <p class="ri-desc" style="color:rgba(165,180,252,0.8);">${esc(r.purpose)}</p>
-              <p class="ri-url">${esc(r.link)}</p>
-            </div>
-            <span class="ri-arrow">↗</span>
-          </a>`;
-        });
-        html += '</div>';
-        container.innerHTML += html;
-      }
+
     }
 
     /* ── RENDER ROADMAP ── */

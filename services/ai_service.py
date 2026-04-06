@@ -71,6 +71,7 @@ Instead of random video links, provide structured learning sources.
 YOUTUBE CHANNELS:
 
 * Provide TOP 5 high-quality YouTube channels for the given skill
+* CRITICAL: Ensure the link is 100% accurate and working. Do not hallucinate links. If unsure of the exact channel URL, provide a YouTube search query URL (e.g., https://www.youtube.com/results?search_query=ChannelName) or direct user to search for the channel name instead of a fake link to avoid 404 errors.
 
 Each channel must include:
 
@@ -87,18 +88,6 @@ Each channel must include:
 
   * well-known, trusted channels
   * channels with structured playlists
-
----
-
-PRACTICE PLATFORMS:
-
-* Provide 3–5 coding/practice platforms
-
-Each platform must include:
-
-* name
-* purpose (e.g., DSA practice, beginner coding, contests)
-* link
 
 ---
 
@@ -152,12 +141,9 @@ Example:
 
 CERTIFICATION RULES:
 
-* ALWAYS include 2–3 FREE certification platforms
-* Must be:
-
-  * relevant to the skill
-  * actually free
-  * useful for learners
+* Provide 4 certification platforms: Coursera, Udemy, and 2 other FREE certification platforms.
+* CRITICAL: Ensure links are 100% accurate and working. Most generated links are 404s. Do not hallucinate exact course links if unsure; instead, provide a search link (e.g., https://www.coursera.org/search?query=SkillName or https://www.udemy.com/courses/search/?q=SkillName) to guarantee it works.
+* Must be relevant to the skill and highly useful for learners.
 
 ---
 
@@ -193,13 +179,6 @@ OUTPUT FORMAT (STRICT JSON ONLY):
 "coverage_level": "Basic",
 "description": "...",
 "link": "https://youtube.com/..."
-}}
-],
-"practice_platforms": [
-{{
-"name": "...",
-"purpose": "...",
-"link": "https://..."
 }}
 ]
 }},
