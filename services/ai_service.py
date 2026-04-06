@@ -70,7 +70,19 @@ Instead of random video links, provide structured learning sources.
 
 YOUTUBE CHANNELS:
 
-* Provide TOP 5 high-quality YouTube channels for the given skill
+* Provide TOP 5 high-quality YouTube channels for the given skill.
+* CURATED MAPPING: If the requested skill falls into one of these categories, you MUST prioritize and use these exact channels. Include the specific "Tip" or "Combo" in their descriptions:
+  1. Data Structures & Algorithms (DSA): take U forward, Apna College, CodeHelp, Abdul Bari, NeetCode. (Tip: Best combo: Striver + NeetCode)
+  2. Programming (Java/C++/Python): Bro Code, Telusko, freeCodeCamp.org, Programming with Mosh, CodeWithHarry. (Tip: Telusko + Bro Code)
+  3. Web Development: Traversy Media, The Net Ninja, CodeWithHarry, freeCodeCamp.org, Kevin Powell. (Tip: Build projects while learning - portfolio website minimum)
+  4. AI / Machine Learning: Krish Naik, codebasics, Sentdex, freeCodeCamp.org, 3Blue1Brown. (Tip: Don’t skip math basics - huge mistake students make)
+  5. Database (DBMS + SQL): CodeHelp, freeCodeCamp.org, Kudvenkat, ProgrammingKnowledge, Simplilearn. (Tip: Practice SQL daily - not just theory)
+  6. Git & GitHub: freeCodeCamp.org, Traversy Media, Programming with Mosh, The Net Ninja, CodeWithHarry. (Tip: Learn in 2–3 days, then USE daily)
+  7. Problem Solving / Logic: Numberphile, MindYourDecisions, 3Blue1Brown, TED, CrashCourse. (Tip: Still, coding problems > watching videos)
+  8. System Design (Beginner): Gaurav Sen, CodeKarle, Tech Dummies, freeCodeCamp.org, Hussein Nasser. (Tip: Start after DSA basics - don’t rush)
+  9. Debugging & Testing: Tech With Tim, freeCodeCamp.org, Academind, Programming with Mosh, Google for Developers. (Tip: Best learning = fixing your own bugs)
+  10. Communication Skills: TED, Charisma on Command, Improvement Pill, BeerBiceps, Jordan Peterson.
+
 * CRITICAL: Ensure the link is 100% accurate and working. Do not hallucinate links. If unsure of the exact channel URL, provide a YouTube search query URL (e.g., https://www.youtube.com/results?search_query=ChannelName) or direct user to search for the channel name instead of a fake link to avoid 404 errors.
 
 Each channel must include:
@@ -300,7 +312,7 @@ def call_groq(prompt: str, attempt: int = 1) -> str | None:
         "model": MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.4,
-        "max_tokens": 4500,
+        "max_tokens": 3500,
     }
 
     try:
