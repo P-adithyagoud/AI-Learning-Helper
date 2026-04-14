@@ -1,110 +1,81 @@
-# AI Learning Planner
+# ✨ AI Learning Planner (Monolith v2.0)
 
-A full-stack web app that generates structured, week-by-week learning plans using Groq AI.
+A premium, AI-powered YouTube playlist curator and learning assistant. Built with a unified **Flask** backend and a high-fidelity **"Nebula"** Vanilla CSS/JS dashboard.
 
-## Project Structure
+![Nebula Dashboard Example](https://img.shields.io/badge/UI-Nebula--Design-blueviolet?style=for-the-badge)
+![Tech Stack](https://img.shields.io/badge/Stack-Flask_%7C_Vanilla_JS_%7C_Groq_AI-blue?style=for-the-badge)
 
-```
-project/
-├── backend/
-│   ├── main.py                  # FastAPI app + routes
-│   ├── services/
-│   │   └── ai_service.py        # Groq API logic
-│   ├── requirements.txt
-│   └── .env.example
-└── frontend/
-    └── index.html               # HTML + Tailwind UI
+---
+
+## 🌌 Key Features
+
+- **Monolithic Architecture**: Zero build steps. High-performance Flask server serving a self-contained, high-fidelity dashboard.
+- **Nebula Design System**: Glassmorphism, artisanal gradients, and smooth animations built entirely with native web technologies.
+- **AI Recommendation Engine**: Orchestrated by Groq (LLM) to generate custom learning paths based on skill level and schedule.
+- **Standardized 10-Column Metadata**: Every playlist includes precise data for:
+  - `rank`, `channel_name`, `playlist_title`, `language`, `level`, `video_count`, `duration_hours`, `description`, `channel_url`, `playlist_url`.
+
+---
+
+## 📁 Project Structure
+
+```text
+Ai-learning-Assistent/
+├── main.py              # Unified Flask Controlle (API + Rendering)
+├── services/
+│   ├── ai_service.py    # AI logic & Curation orchestration
+│   └── curated_data.py  # High-fidelity dataset & schema definitions
+├── templates/
+│   └── index.html       # The "Nebula" Dashboard (Vanilla JS/CSS)
+├── static/              # Assets and global styles
+├── requirements.txt     # Python dependencies
+└── .env                 # API Credentials (ignored by git)
 ```
 
 ---
 
-## Prerequisites
+## 🚀 Quick Start
 
+### 1. Requirements
 - Python 3.10+
-- A [Groq API key](https://console.groq.com) (free tier available)
+- [Groq API Key](https://console.groq.com)
 
----
-
-## Setup & Run
-
-### 1. Backend
-
+### 2. Setup
 ```bash
-# Navigate to backend
-cd project/backend
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+# Clone the repository
+git clone https://github.com/P-adithyagoud/AI-Learning-Helper.git
+cd AI-Learning-Helper
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Set your Groq API key
-cp .env.example .env
-# Edit .env and set GROQ_API_KEY=your_actual_key
-
-# Run the server
-uvicorn main:app --reload --port 8000
+# Configure Environment
+echo "GROQ_API_KEY=your_key_here" > .env
 ```
 
-The API will be live at: `http://localhost:8000`
-
-### 2. Frontend
-
-Open `frontend/index.html` directly in your browser — no build step needed.
-
-```bash
-# Option A: Double-click index.html in your file explorer
-
-# Option B: Serve via Python (avoids any CORS quirks)
-cd project/frontend
-python -m http.server 3000
-# Then open http://localhost:3000
+### 3. Launch
+```powershell
+# Windows
+.\run_local.ps1
 ```
+The dashboard will be available at: **http://localhost:8000**
 
 ---
 
-## API Reference
+## 🛡️ Metadata Schema
+Our platform enforces a strict JSON schema for all playlist recommendations to ensure UI consistency:
 
-### `POST /generate-plan`
-
-**Request body:**
-```json
-{
-  "skill": "Python",
-  "level": "Beginner",
-  "daily_hours": 2
-}
-```
-
-**Success response:**
-```json
-{
-  "duration": "4 weeks",
-  "weeks": [
-    {
-      "week": 1,
-      "days": [
-        {
-          "day": 1,
-          "topic": "Python Basics & Setup",
-          "resource": "https://www.youtube.com/watch?v=rfscVS0vtbw",
-          "task": "Install Python, run first script, print Hello World"
-        }
-      ]
-    }
-  ]
-}
-```
-
-**Validation errors** return HTTP 422 with detail messages.  
-**AI failures** return HTTP 502 with an error message.
+| Field | Description |
+| :--- | :--- |
+| `rank` | Quality score ranking (1-10) |
+| `playlist_title` | Name of the YouTube playlist |
+| `channel_name` | Name of the creator channel |
+| `video_count` | Number of lessons in the playlist |
+| `duration_hours` | Estimated total runtime |
+| `language` | Instruction language (e.g. English, Hindi) |
+| `level` | Difficulty (Beginner/Intermediate/Advanced) |
 
 ---
 
-## Notes
-
-- The backend retries once if the AI returns invalid JSON
-- All AI errors are caught and return clean messages to the frontend
-- No database or authentication required
+## ✨ Developed with Antigravity
+This project was built and optimized using **Antigravity**, a powerful agentic AI coding assistant from Google Deepmind.
