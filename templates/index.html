@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Learning Planner | Master Any Skill</title>
+    <!-- Modern Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- DESIGN TOKENS --- */
+        :root {
+            --bg-color: #0B0E14;
+            --accent-color: #6366F1;
+            --accent-hover: #4F46E5;
+            --text-primary: #FFFFFF;
+            --text-secondary: #94A3B8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --sidebar-width: 260px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* --- BASE RESET --- */
+        * { margin: 0; padding: 0; box-box: border-box; }
+        body {
+            background-color: var(--bg-color);
+            background: radial-gradient(circle at 50% 0%, #1A1F2C 0%, #0B0E14 100%);
+            color: var(--text-primary);
+            font-family: 'Inter', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: rgba(11, 14, 20, 0.8);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            items-center: center;
+            gap: 0.75rem;
+            margin-bottom: 3rem;
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-color), #8B5CF6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-center: center;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-menu { flex: 1; list-style: none; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-color);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .nav-item svg { width: 1.25rem; height: 1.25rem; }
+
+        /* --- MAIN CONTENT --- */
+        .main {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 4rem 2rem;
+            position: relative;
+        }
+
+        /* Fancy Orbs */
+        .orb {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        .orb-1 { top: -200px; left: 10%; }
+        .orb-2 { bottom: -200px; right: 10%; background: radial-gradient(circle, rgba(139, 92, 246, 0.05) 0%, transparent 70%); }
+
+        .hero {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            margin-top: 4vh;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to bottom, #FFF 0%, #94A3B8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 3.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* --- GLASS CARD --- */
+        .input-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .input-card:hover { transform: translateY(-4px); }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 0.75rem; text-align: left; }
+        .label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); }
+
+        input[type="text"], select {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            color: #fff;
+            font-size: 0.9375rem;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Modern Range Input */
+        .range-container {
+            grid-column: span 2;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: var(--transition);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); background: var(--accent-color); }
+
+        .range-val { font-size: 0.875rem; font-weight: 700; color: var(--accent-color); min-width: 80px; text-align: right; }
+
+        /* CTA Button */
+        .btn {
+            grid-column: span 2;
+            background: linear-gradient(135deg, var(--accent-color), #8B5CF6);
+            border: none;
+            border-radius: 14px;
+            padding: 1.125rem;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        /* --- LOADING OVERLAY --- */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 14, 20, 0.95);
+            backdrop-filter: blur(10px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-center: center;
+            z-index: 2000;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(99, 102, 241, 0.1);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 2rem;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .loading-text {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: var(--accent-color);
+            font-style: italic;
+        }
+
+        /* --- RESULTS --- */
+        #results-container {
+            display: none;
+            margin-top: 4rem;
+            width: 100%;
+            max-width: 1100px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .results-header { text-align: left; margin-bottom: 2.5rem; }
+        .results-header h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .results-header p { color: var(--text-secondary); }
+
+        .playlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .card:hover { border-color: var(--accent-color); background: rgba(255,255,255,0.06); }
+
+        .card-thumb { aspect-ratio: 16/9; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.1); position: relative; }
+        .badge-group { position: absolute; bottom: 10px; left: 10px; display: flex; gap: 0.5rem; }
+        .badge { background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+        
+        .card-body { padding: 1.25rem; }
+        .card-title { font-size: 0.9375rem; font-weight: 700; margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-desc { font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.5rem; }
+        
+        .card-meta { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+        .channel-link { color: var(--accent-color); text-decoration: none; font-weight: 600; }
+        .channel-link:hover { text-decoration: underline; }
+
+        .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .card-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 0.625rem;
+            border-radius: 10px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        .card-btn.primary { background: var(--accent-color); border: none; }
+        .card-btn:hover { background: #fff; color: #000; }
+        .card-btn.primary:hover { background: var(--accent-hover); color: #fff; transform: translateY(-1px); }
+
+        /* Helpers */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            </div>
+            AI Planner
+        </div>
+
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                Dashboard
+            </a>
+            <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                Explore
+            </a>
+            <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0-5H20"/></svg>
+                My Plans
+            </a>
+            <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                Settings
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+
+        <section class="hero" id="home-section">
+            <h1>Master Any Skill with<br>the Right Playlists</h1>
+            <p>Our AI-powered system analyzes thousands of resources to curate the absolute best YouTube paths tailored to your level and schedule.</p>
+
+            <form class="input-card" id="search-form">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label class="label">Choose Skill</label>
+                        <input type="text" id="skill" placeholder="e.g. Python for Data Science" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="label">Expertise Level</label>
+                        <select id="level">
+                            <option value="Beginner">Beginner Level</option>
+                            <option value="Intermediate">Intermediate Level</option>
+                            <option value="Advanced">Advanced Level</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Generate Playlists</button>
+            </form>
+        </section>
+
+        <section id="results-container">
+            <div class="results-header">
+                <h2 id="result-title"></h2>
+                <p>Curated results based on your expertise.</p>
+            </div>
+            <div class="playlist-grid" id="playlist-grid">
+                <!-- Cards injected here -->
+            </div>
+        </section>
+    </main>
+
+    <div class="loading-overlay" id="loader">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loader-text">Finding best playlists...</div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const MESSAGES = [
+            "Finding best playlists...",
+            "Ranking resource quality...",
+            "Analyzing pedagogical structure...",
+            "Optimizing your learning path...",
+            "Curation complete!"
+        ];
+
+        // --- DOM ELEMENTS ---
+        const form = document.getElementById('search-form');
+        const loader = document.getElementById('loader');
+        const loaderText = document.getElementById('loader-text');
+        const homeSec = document.getElementById('home-section');
+        const resultsSec = document.getElementById('results-container');
+        const playlistGrid = document.getElementById('playlist-grid');
+        const resultTitle = document.getElementById('result-title');
+
+        // --- INTERACTION ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const skill = document.getElementById('skill').value;
+            const level = document.getElementById('level').value;
+            const daily_hours = 2.0;
+
+            // Start Loading
+            loader.style.display = 'flex';
+            let msgIdx = 0;
+            const msgInt = setInterval(() => {
+                msgIdx = (msgIdx + 1) % MESSAGES.length;
+                loaderText.innerText = MESSAGES[msgIdx];
+            }, 1200);
+
+            try {
+                const response = await fetch('/generate-playlists', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ skill, level, daily_hours: parseFloat(daily_hours) })
+                });
+                
+                if (!response.ok) throw new Error('API request failed');
+                const data = await response.json();
+
+                // Build Results UI
+                renderResults(data);
+
+                // Show Results
+                resultsSec.style.display = 'block';
+                homeSec.classList.add('hidden');
+                loader.style.display = 'none';
+                clearInterval(msgInt);
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } catch (err) {
+                console.error(err);
+                alert('Something went wrong. Please try again.');
+                loader.style.display = 'none';
+                clearInterval(msgInt);
+            }
+        });
+
+        function renderResults(data) {
+            resultTitle.innerHTML = `Top ${data.playlists.length} Playlists for <span style="color:var(--accent-color)">${data.skill}</span>`;
+            playlistGrid.innerHTML = '';
+            
+            data.playlists.forEach((p) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-thumb">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <div class="badge-group">
+                            <span class="badge">${p.video_count} Videos</span>
+                            <span class="badge">${p.language}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div style="font-size: 10px; font-weight: 800; color: var(--accent-color); text-transform: uppercase; margin-bottom: 6px;">#${p.rank} Ranked Choice</div>
+                        <h3 class="card-title">${p.playlist_title}</h3>
+                        <p class="card-meta">
+                            <a href="${p.channel_url}" target="_blank" class="channel-link">${p.channel_name}</a> 
+                            <span>•</span> 
+                            <span>${p.duration_hours}h total</span>
+                        </p>
+                        <p class="card-desc">${p.description}</p>
+                        <div class="card-actions">
+                            <a href="${p.channel_url}" target="_blank" class="card-btn">Channel</a>
+                            <a href="${p.playlist_url}" target="_blank" class="card-btn primary">Watch Now</a>
+                        </div>
+                    </div>
+                `;
+                playlistGrid.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>

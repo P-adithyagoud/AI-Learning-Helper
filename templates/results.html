@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% set active_page = 'dashboard' %}
+
+{% block title %}Results for {{ skill }} | AI Learning Planner{% endblock %}
+
+{% block content %}
+<main class="relative overflow-hidden p-8 lg:p-12 mr-80">
+    <!-- Background Gradients -->
+    <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gold-400/5 blur-[120px] rounded-full pointer-events-none"></div>
+
+    <div class="max-w-5xl mx-auto relative z-10">
+        <header class="mb-12 flex justify-between items-end">
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                   <span class="text-gold-400">✨</span>
+                   <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Analysis Complete</span>
+                </div>
+                <h2 class="text-4xl font-bold tracking-tight">
+                    Mastering <span class="text-gold-400">{{ skill }}</span>
+                </h2>
+                <p class="text-zinc-500 mt-2">Personalized learning path for {{ level }} optimization.</p>
+            </div>
+            <a href="/" class="px-4 py-2 rounded-xl border border-white/10 text-xs font-bold hover:bg-white/5 transition-colors">
+                New Search
+            </a>
+        </header>
+
+        <!-- Playlist Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {% for p in playlists %}
+            <div class="group relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-all duration-300">
+                <div class="absolute top-4 left-4 z-10">
+                    <div class="bg-black/60 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold px-2 py-1 rounded-lg">#{{ p.rank }}</div>
+                </div>
+                <!-- Thumbnail Placeholder/Icon -->
+                <div class="aspect-video bg-gradient-to-br from-white/10 to-transparent relative group-hover:opacity-80 transition-opacity flex items-center justify-center">
+                    <svg class="w-10 h-10 text-white/20 group-hover:text-gold-400 group-hover:scale-110 transition-all" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-semibold text-sm line-clamp-1 group-hover:text-gold-400 transition-colors">{{ p.playlist_title }}</h3>
+                    <p class="text-xs text-muted-foreground mb-4">{{ p.channel_name }}</p>
+                    <p class="text-[13px] text-zinc-400 line-clamp-2 leading-relaxed mb-4 min-h-[40px]">{{ p.why_best }}</p>
+                    
+                    <!-- Stats -->
+                    <div class="flex items-center gap-4 mb-5">
+                        <div class="flex items-center gap-1.5 text-xs text-zinc-500">
+                            <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <span>{{ p.duration_category }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-xs text-zinc-500">
+                            <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
+                            <span>{{ p.difficulty }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="flex flex-wrap gap-1.5 mb-6">
+                        {% for tag in p.tags %}
+                        <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/5 text-zinc-500">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Score -->
+                    <div class="space-y-1.5 mb-6">
+                        <div class="flex justify-between text-[10px] uppercase tracking-wider font-bold text-zinc-500">
+                            <span>Quality Match</span>
+                            <span class="text-gold-400">{{ p.quality_score }}%</span>
+                        </div>
+                        <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-gold-500 to-gold-300" style="width: {{ p.quality_score }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Action -->
+                    <a href="{{ p.youtube_link }}" target="_blank" class="w-full flex items-center justify-center gap-2 py-3 bg-white text-black text-xs font-bold rounded-xl hover:bg-gold-400 transition-colors active:scale-95">
+                        Watch Playlist
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</main>
+
+<!-- RIGHT PANEL -->
+<aside class="w-80 h-screen fixed right-0 top-0 border-l border-white/5 bg-background p-6 flex flex-col gap-6 z-50 overflow-y-auto">
+    <h2 class="text-sm font-bold uppercase tracking-wider text-zinc-500">Quick Insights</h2>
+    
+    <div class="contents">
+        <div class="p-5 rounded-2xl bg-gradient-to-br from-gold-500/20 to-transparent border border-gold-500/30">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="text-gold-400 text-xs font-bold uppercase tracking-tighter">🏆 Golden Choice</span>
+            </div>
+            <h3 class="text-sm font-bold leading-tight mb-2">{{ playlists[0].playlist_title }}</h3>
+            <p class="text-[11px] text-zinc-400 leading-relaxed mb-4">{{ playlists[0].channel_name }}</p>
+            <a href="{{ playlists[0].youtube_link }}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2 bg-gold-500 text-black text-[11px] font-bold rounded-lg hover:bg-gold-400 transition-colors">
+                Start Here
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3">
+            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                <p class="text-[10px] text-zinc-500 uppercase font-bold mb-1">Efficiency Plan</p>
+                <p class="text-xl font-bold">{{ summary.estimated_completion_days }}</p>
+            </div>
+            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                <p class="text-[10px] text-zinc-500 uppercase font-bold mb-1">Total Resources</p>
+                <p class="text-xl font-bold">{{ summary.total_playlists }} Playlists</p>
+            </div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-xs font-bold uppercase tracking-wider">⚡ The Strategy</span>
+            </div>
+            <p class="text-[12px] text-zinc-400 leading-relaxed italic mb-4">'{{ summary.recommended_strategy }}'</p>
+            <div class="p-3 rounded-lg bg-gold-400/10 border border-gold-400/20">
+                <p class="text-[11px] text-gold-400 leading-relaxed font-medium">💡 {{ summary.learning_path_hint }}</p>
+            </div>
+        </div>
+    </div>
+</aside>
+{% endblock %}
