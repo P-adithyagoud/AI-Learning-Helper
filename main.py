@@ -94,25 +94,13 @@ def generate_playlists():
     level = data["level"]
     daily_hours = float(data["daily_hours"])
 
-    logger.info(f"Generating results for: {skill} ({level})")
+    # Logic for JSON processing (AJAX driven)
     result = generate_learning_plan(skill, level, daily_hours)
 
     if "error" in result:
-        if is_json:
-            return jsonify({"detail": result["error"]}), 502
-        return f"<h1>AI Error</h1><p>{result['error']}</p><a href='/'>Back</a>", 502
+        return jsonify({"detail": result["error"]}), 502
 
-    if is_json:
-        return jsonify(result)
-
-    # Standard Multi-page render
-    return render_template(
-        "results.html", 
-        skill=result["skill"], 
-        level=result["level"], 
-        playlists=result["playlists"], 
-        summary=result["summary"]
-    )
+    return jsonify(result)
 
 
 # Serve the Dashboard — native Flask template
